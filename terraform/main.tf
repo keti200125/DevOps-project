@@ -40,7 +40,7 @@ resource "aws_instance" "web_server" {
               yum install -y docker
               service docker start
               usermod -aG docker ec2-user
-              docker run -d -p 80:80 ghcr.io/YOUR_GITHUB_USERNAME/YOUR_APP:latest
+              docker run -d -p 80:80 ghcr.io/keti200125/DevOps-project:latest
               EOF
 
   tags = {
