@@ -1,0 +1,46 @@
+---
+- name: Deploy Docker Container
+  hosts: all
+  become: true 
+
+  tasks:
+    - name: Update package list (Debian-based)
+      apt:
+        update_cache: yes
+      when: ansible_os_family == "Debian"
+
+    - name: Install required packages for Docker
+      package:
+        name:
+          - docker.io
+          - python3-pip
+          - python3-docker
+        state: present
+
+    - name: Add user to Docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    - name: Ensure Docker service is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Log in to GitHub Container Registry
+      command: docker login ghcr.io -u "{{ github_user }}" -p "{{ github_token }}"
+      no_log: true  
+
+    - name: Pull Docker Image
+      command: docker pull ghcr.io/{{ github_user }}/my-demo-app:latest
+
+    - name: Run Docker Container
+      docker_container:
+        name: my-demo-container
+        image: ghcr.io/{{ github_user }}/my-demo-app:latest
+        state: started
+        restart_policy: always
+        ports:
+          - "80:80"
